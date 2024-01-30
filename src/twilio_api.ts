@@ -15,6 +15,8 @@ const retellWsAddress = "api.re-tell.ai";
 const retellApiKey = "YOUR_RETELL_API_KEY";
 const retellAgentId = "YOUR_RETELL_AGENT_ID";
 
+// Todo: add hangup and call transfer
+
 export const CreatePhoneNumber = async (areaCode: number) => {
   try {
     const localNumber = await twilioClient
