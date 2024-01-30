@@ -18,6 +18,7 @@ export class Server {
     this.app.use(express.urlencoded({ extended: true }));
 
     this.llmClient = new DemoLlmClient();
+    this.handleRetellLlmWebSocket();
   }
 
   listen(port: number): void {
