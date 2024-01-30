@@ -5,8 +5,8 @@ import expressWs from "express-ws";
 import twilio from "twilio";
 
 const twilioClient = twilio(
-  "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  process.env.TWILIO_ACCOUNT_ID,
+  process.env.TWILIO_AUTH_TOKEN,
 );
 
 const ipAddress = "http://localhost:3002";

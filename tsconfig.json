@@ -3,12 +3,12 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "strictNullChecks": false,
-    "rootDir": "./server",
+    "rootDir": "./src",
     "outDir": "./dist",
     "target": "ES2017",
     "module": "commonjs",
     "esModuleInterop": true,
-    "lib": ["ES2021.String","dom","es2017"]
+    "lib": ["ES2021.String", "dom", "es2017"]
   },
-  "exclude": ["node_modules", "server/deprecated"]
+  "exclude": ["node_modules"]
 }
