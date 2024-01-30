@@ -1,10 +1,8 @@
+import { Server } from "./server";
 import { RegisterTwilioApi } from "./twilio_api";
-import express from "express";
-import expressWs from "express-ws";
 
-const app = expressWs(express()).app;
+const server = new Server();
 
-RegisterTwilioApi(app);
+RegisterTwilioApi(server.app);
 
-app.listen(8080);
-console.log("Listening on 8080");
+server.listen(8080);
