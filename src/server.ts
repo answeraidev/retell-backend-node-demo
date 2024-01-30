@@ -4,6 +4,7 @@ import { createServer, Server as HTTPServer } from "http";
 import cors from "cors";
 import expressWs from "express-ws";
 import { DemoLlmClient } from "./llm";
+import { RegisterTwilioApi } from "./twilio_api";
 
 export class Server {
   private httpServer: HTTPServer;
@@ -17,7 +18,10 @@ export class Server {
     this.app.use(cors());
     this.app.use(express.urlencoded({ extended: true }));
 
+    this.handleRetellLlmWebSocket();
     this.llmClient = new DemoLlmClient();
+
+    RegisterTwilioApi(this.app);
   }
 
   listen(port: number): void {

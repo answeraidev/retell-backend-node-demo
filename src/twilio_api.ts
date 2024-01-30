@@ -3,17 +3,19 @@ import axios from "axios";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
 import expressWs from "express-ws";
 import twilio from "twilio";
+import dotenv from "dotenv";
+
+// Load up env file which contains credentials
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_ID,
   process.env.TWILIO_AUTH_TOKEN,
 );
 
-const ipAddress = "http://localhost:3002";
+const ipAddress = "YOUR_NGROK_ADDRESS";
 const retellAddress = "https://api.re-tell.ai";
 const retellWsAddress = "api.re-tell.ai";
-const retellApiKey = "YOUR_RETELL_API_KEY";
-const retellAgentId = "YOUR_RETELL_AGENT_ID";
 
 // Todo: add hangup and call transfer
 
@@ -29,10 +31,8 @@ export const CreatePhoneNumber = async (areaCode: number) => {
       phoneNumber: localNumber[0].phoneNumber,
       voiceUrl: `${ipAddress}/twilio-voice-webhook`,
     });
-    if (phoneNumberObject?.status != "in-use") {
-      console.log("Getting phone number:", phoneNumberObject);
-      return phoneNumberObject;
-    }
+    console.log("Getting phone number:", phoneNumberObject);
+    return phoneNumberObject;
   } catch (err) {
     console.error("Create phone number API: ", err);
   }
@@ -49,11 +49,11 @@ export const CreatePhoneCall = async (fromNumber: string, toNumber: string) => {
       url: `${retellAddress}/register-call`,
       method: "POST",
       headers: {
-        Authorization: `Bearer ${retellApiKey}`,
+        Authorization: `Bearer ${process.env.RETELL_API_KEY}`,
         "Content-type": "application/json",
       },
       data: {
-        agent_id: retellAgentId,
+        agent_id: process.env.RETELL_AGENT_ID,
         audio_websocket_protocol: "twilio",
         audio_encoding: "mulaw",
         sample_rate: 8000,
@@ -80,11 +80,11 @@ export const RegisterTwilioApi = (app: expressWs.Application) => {
         url: `${retellAddress}/register-call`,
         method: "POST",
         headers: {
-          Authorization: `Bearer ${retellApiKey}`,
+          Authorization: `Bearer ${process.env.RETELL_API_KEY}`,
           "Content-type": "application/json",
         },
         data: {
-          agent_id: retellAgentId,
+          agent_id: process.env.RETELL_AGENT_ID,
           audio_websocket_protocol: "twilio",
           audio_encoding: "mulaw",
           sample_rate: 8000,
