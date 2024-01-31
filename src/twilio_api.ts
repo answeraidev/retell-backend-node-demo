@@ -48,20 +48,12 @@ export const DeletePhoneNumber = async (phoneNumberKey: string) => {
 
 export const CreatePhoneCall = async (fromNumber: string, toNumber: string) => {
   try {
-    const res = await retellClient.registerCall({
-      agentId: process.env.RETELL_AGENT_ID,
-      audioWebsocketProtocol: AudioWebsocketProtocol.Twilio,
-      audioEncoding: AudioEncoding.Mulaw,
-      sampleRate: 8000,
+    await twilioClient.calls.create({
+      url: `${ipAddress}/twilio-voice-webhook`,
+      to: toNumber,
+      from: fromNumber,
     });
-    if (res.callDetail) {
-      await twilioClient.calls.create({
-        url: `${ipAddress}/twilio-voice-webhook?callId=${res.callDetail.callId}`,
-        to: toNumber,
-        from: fromNumber,
-      });
-      console.log(`Call from: ${fromNumber} to: ${toNumber}`);
-    }
+    console.log(`Call from: ${fromNumber} to: ${toNumber}`);
   } catch (error: any) {
     console.error("failer to retrieve caller information: ", error);
   }
