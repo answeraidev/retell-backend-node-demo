@@ -5,7 +5,4 @@ dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 import { Server } from "./server";
 
 const server = new Server();
-
-// RegisterTwilioApi(server.app);
-
 server.listen(8080);

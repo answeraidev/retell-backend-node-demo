@@ -5,6 +5,7 @@ import cors from "cors";
 import expressWs from "express-ws";
 import { DemoLlmClient } from "./llm";
 import { RegisterTwilioApi } from "./twilio_api";
+import { Readable } from "stream";
 
 export class Server {
   private httpServer: HTTPServer;
@@ -36,11 +37,38 @@ export class Server {
         const callId = req.params.call_id;
         console.log("Handle llm ws for: ", callId);
 
+        let responseId = 0;
+
+        const sendStream = async (
+          responseStream: Readable,
+          responseStreamId: number,
+        ) => {
+          for await (const responseText of responseStream) {
+            if (responseId !== responseStreamId) {
+              // New response needed, abondon this one
+              return;
+            }
+            const event = {
+              response_id: responseId,
+              content: responseText,
+              content_complete: false,
+              end_call: false,
+            };
+            ws.send(JSON.stringify(event));
+          }
+          // Signal end of response.
+          const event = {
+            response_id: responseId,
+            content: "",
+            content_complete: true,
+            end_call: false,
+          };
+          ws.send(JSON.stringify(event));
+        };
+
         ws.on("error", (err) => {
           console.error("Error received in LLM websocket client: ", err);
         });
-
-        let responseId;
 
         ws.on("message", async (data: RawData, isBinary: boolean) => {
           if (isBinary) {
@@ -60,33 +88,20 @@ export class Server {
                 response.transcript,
                 response.interaction_type,
               );
-              for await (const responseText of responseStream) {
-                if (responseId !== response.response_id) {
-                  // New response needed, abondon this one
-                  return;
-                }
-                const event = {
-                  response_id: responseId,
-                  content: responseText,
-                  content_complete: false,
-                  end_call: false,
-                };
-                ws.send(JSON.stringify(event));
-              }
-              // Signal end of response.
-              const event = {
-                response_id: responseId,
-                content: "",
-                content_complete: true,
-                end_call: false,
-              };
-              ws.send(JSON.stringify(event));
+              sendStream(responseStream, response.response_id);
             }
           } catch (err) {
             console.error("Error in parsing LLM websocket message: ", err);
             ws.close(1002, "Cannot parse incoming message.");
           }
         });
+
+        // Start sending the begin message to signal the client is ready.
+        const responseStream = this.llmClient.DraftResponse(
+          [],
+          "response_required",
+        );
+        sendStream(responseStream, responseId);
       },
     );
   }
