@@ -1,10 +1,11 @@
-import express, { Request } from "express";
+import express, { Request, Response } from "express";
 import { RawData, WebSocket } from "ws";
 import { createServer, Server as HTTPServer } from "http";
 import cors from "cors";
 import expressWs from "express-ws";
 import { DemoLlmClient, RetellRequest } from "./llm";
 import { RegisterTwilioApi } from "./twilio_api";
+import axios from "axios";
 
 export class Server {
   private httpServer: HTTPServer;
@@ -19,6 +20,7 @@ export class Server {
     this.app.use(express.urlencoded({ extended: true }));
 
     this.handleRetellLlmWebSocket();
+    this.handleRegisterCallAPI();
     this.llmClient = new DemoLlmClient();
 
     // RegisterTwilioApi(this.app);
@@ -27,6 +29,46 @@ export class Server {
   listen(port: number): void {
     this.app.listen(port);
     console.log("Listening on " + port);
+  }
+
+
+
+  handleRegisterCallAPI() {
+    this.app.post("/register-call-on-your-server", async (req: Request, res: Response) => {
+      // Extract agentId from request body; apiKey should be securely stored and not passed from the client
+      const { agentId } = req.body;
+
+      try {
+        const response = await this.retellRegisterCallAPI(agentId);
+        // Send back the successful response to the client
+        res.json(response);
+      } catch (error) {
+        console.error("Error registering call:", error);
+        // Send an error response back to the client
+        res.status(500).json({ error: "Failed to register call" });
+      }
+    });
+  }
+
+  async retellRegisterCallAPI(agentId: string) {
+    const apiUrl = "https://api.re-tell.ai/register-call";
+
+    const response = await axios({
+      url: apiUrl,
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RETELL_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        agent_id: agentId,
+        audio_websocket_protocol: "web",
+        audio_encoding: "s16le",
+        sample_rate: 44100,
+      },
+    });
+
+    return response.data;
   }
 
   handleRetellLlmWebSocket() {
