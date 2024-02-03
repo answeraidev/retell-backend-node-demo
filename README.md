@@ -1,11 +1,11 @@
 # retell-backend-node-demo
 
 This backend repo demonstrates how to start a websocket server that Retell server will connect to. Retell will send
-live transcripts and other updates to the server, and get responses from this server.
+live transcripts and other updates to the server, and get responses from this server. see [API Docs](https://docs.re-tell.ai/guide/custom-llm-websocket) for walkthrough.
 
 The protocol of messages we send and expect to receive are documented [here](https://docs.re-tell.ai/api-references/llm-websocket).
 
-This repo also contains code to use Twilio to get number, make phone calls.
+This repo also contains code to use Twilio to get number, make phone calls, see [API Docs](https://docs.re-tell.ai/guide/phone-setup) for walkthrough.
 
 This repo contains azure OpenAI & OpenAI, modify the import inside `src/server.ts` to switch between two.
 
@@ -49,7 +49,7 @@ make a phone call with an agent, etc. Here we assume you already created agent f
 
 To ues these features, follow these steps:
 
-1. Uncomment `RegisterTwilioApi(this.app)` in `src/server.ts` file to set up Twilio voice webhook. What this does is that every time a number of yours in Twilio get called, it would call this webhook which internally calls the `register-call` API and sends the correct audio websocket address back to Twilio, so it can connects with Retell to start the call.
+1. Uncomment twilio client initialization and `RegisterTwilioApi(this.app)` in `src/server.ts` file to set up Twilio voice webhook. What this does is that every time a number of yours in Twilio get called, it would call this webhook which internally calls the `register-call` API and sends the correct audio websocket address back to Twilio, so it can connects with Retell to start the call.
 
 2. Put your ngrok ip address into `.env.development`, it would be something like `https://dc14-2601-645-c57f-8670-9986-5662-2c9a-adbd.ngrok-free.app`.
 

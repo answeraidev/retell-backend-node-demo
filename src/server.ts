@@ -4,13 +4,19 @@ import { createServer, Server as HTTPServer } from "http";
 import cors from "cors";
 import expressWs from "express-ws";
 import { DemoLlmClient, RetellRequest } from "./llm_azure_openai";
-import { RegisterTwilioApi } from "./twilio_api";
-import axios from "axios";
+import { TwilioClient } from "./twilio_api";
+import { RetellClient } from "retell-sdk";
+import {
+  AudioWebsocketProtocol,
+  AudioEncoding,
+} from "retell-sdk/models/components";
 
 export class Server {
   private httpServer: HTTPServer;
   public app: expressWs.Application;
   private llmClient: DemoLlmClient;
+  private retellClient: RetellClient;
+  private twilioClient: TwilioClient;
 
   constructor() {
     this.app = expressWs(express()).app;
@@ -22,8 +28,12 @@ export class Server {
     this.handleRetellLlmWebSocket();
     this.handleRegisterCallAPI();
     this.llmClient = new DemoLlmClient();
+    this.retellClient = new RetellClient({
+      apiKey: process.env.RETELL_API_KEY,
+    });
 
-    // RegisterTwilioApi(this.app);
+    // this.twilioClient = new TwilioClient();
+    // this.twilioClient.RegisterTwilioApi(this.app);
   }
 
   listen(port: number): void {
@@ -31,44 +41,30 @@ export class Server {
     console.log("Listening on " + port);
   }
 
-
-
+  // Only used for web frontend to register call so that frontend don't need api key
   handleRegisterCallAPI() {
-    this.app.post("/register-call-on-your-server", async (req: Request, res: Response) => {
-      // Extract agentId from request body; apiKey should be securely stored and not passed from the client
-      const { agentId } = req.body;
+    this.app.post(
+      "/register-call-on-your-server",
+      async (req: Request, res: Response) => {
+        // Extract agentId from request body; apiKey should be securely stored and not passed from the client
+        const { agentId } = req.body;
 
-      try {
-        const response = await this.retellRegisterCallAPI(agentId);
-        // Send back the successful response to the client
-        res.json(response);
-      } catch (error) {
-        console.error("Error registering call:", error);
-        // Send an error response back to the client
-        res.status(500).json({ error: "Failed to register call" });
-      }
-    });
-  }
-
-  async retellRegisterCallAPI(agentId: string) {
-    const apiUrl = "https://api.re-tell.ai/register-call";
-
-    const response = await axios({
-      url: apiUrl,
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.RETELL_API_KEY}`,
-        'Content-Type': 'application/json',
+        try {
+          const callResponse = await this.retellClient.registerCall({
+            agentId: agentId,
+            audioWebsocketProtocol: AudioWebsocketProtocol.Web,
+            audioEncoding: AudioEncoding.S16le,
+            sampleRate: 24000,
+          });
+          // Send back the successful response to the client
+          res.json(callResponse.callDetail);
+        } catch (error) {
+          console.error("Error registering call:", error);
+          // Send an error response back to the client
+          res.status(500).json({ error: "Failed to register call" });
+        }
       },
-      data: {
-        agent_id: agentId,
-        audio_websocket_protocol: "web",
-        audio_encoding: "s16le",
-        sample_rate: 44100,
-      },
-    });
-
-    return response.data;
+    );
   }
 
   handleRetellLlmWebSocket() {
