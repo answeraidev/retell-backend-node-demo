@@ -19,7 +19,6 @@ const retellClient = new RetellClient({
 });
 
 const ipAddress = process.env.NGROK_IP_ADDRESS;
-const retellWsAddress = "api.re-tell.ai";
 
 // Todo: add hangup and call transfer
 
@@ -105,7 +104,7 @@ export const RegisterTwilioApi = (app: expressWs.Application) => {
           const response = new VoiceResponse();
           const start = response.connect();
           const stream = start.stream({
-            url: `wss://${retellWsAddress}/audio-websocket/${callResponse.callDetail.callId}`,
+            url: `wss://api.re-tell.ai/audio-websocket/${callResponse.callDetail.callId}`,
           });
           res.set("Content-Type", "text/xml");
           res.send(response.toString());
