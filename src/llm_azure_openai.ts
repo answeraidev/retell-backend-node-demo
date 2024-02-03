@@ -101,7 +101,7 @@ export class DemoLlmClient {
 
     try {
       let events = await this.client.streamChatCompletions(
-        process.env.AZURE_OPENAI_DEPLOYMENT_ID,
+        process.env.AZURE_OPENAI_DEPLOYMENT_NAME,
         requestMessages,
         option,
       );
