@@ -3,7 +3,7 @@ import { RawData, WebSocket } from "ws";
 import { createServer, Server as HTTPServer } from "http";
 import cors from "cors";
 import expressWs from "express-ws";
-import { DemoLlmClient, RetellRequest } from "./llm";
+import { DemoLlmClient, RetellRequest } from "./llm_azure_openai";
 import { RegisterTwilioApi } from "./twilio_api";
 import axios from "axios";
 
